@@ -1,6 +1,6 @@
 import os
 
-root_path = os.getwcd()
+root_path = os.getcwd()
 
 directory_list = [
         'dbconnector',
