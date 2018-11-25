@@ -3,9 +3,26 @@ from werkzeug.wrappers import Response
 
 from sylfk.wsgi_adapter import wsgi_app
 from sylfk.exceptions as exceptions
+from sylfk.helper import parse_static_key
 
 import os
 
+
+# 定义常见服务异常的响应体
+ERROR_MAP = {
+        '401': Response('<h1>401 Unknown or unsupported method</h1>', content_type='text/html; charset=UTF-8', status=401),
+        '404': Response('<h1>404 Source Not Found</h1>', content_type='text/html; charset=UTF-8', status=404),
+        '503': Response('<h1>504 Unknown Function Type</h1>', content_type='text/html; charset=UTF-8', status=503),
+        }
+
+# 定义文件类型
+TYPE_MAP = {
+        'css': 'text/css',
+        'js': 'text/js',
+        'png': 'image/png',
+        'jpg': 'image/jpg',
+        'jpeg': 'image/jpeg',
+        }
 
 # 指定URL下，处理请求的函数，将其封装为一个有type标识的数据结构
 class ExecFunc:
@@ -24,6 +41,27 @@ class SYLFk:
         self.static_map = {} # 存放 URL 与 静态资源的映射
         self.function_map = {} # 存放 Endpoint 与请求处理函数的映射
         self.static_folder = static_folder # 静态资源本地存放路径，默认放在app所在目录的 static 文件夹
+
+    # 静态资源的路由，用来寻找匹配的URL 并返回对应类型和文件内容封装成的响应体，找不到就返回404页
+    def dispatch_static(self, static_path):
+        # 判断资源文件是否在静态资源规则中，如果不存在，返回 404 状态页
+        if os.path.exists(static_path):
+            # 获取资源文件后缀
+            key = parse_static_key(static_path)
+
+            # 获取文件类型
+            doc_type = TYPE_MAP.get(key, 'text/plain')
+
+            # 获取文件内容
+            with open(static_path, 'rb') as f:
+                rep = f.read()
+
+            # 封装并返回响应体
+            return Response(rep, content_type=doc_type)
+        else:
+            # 返回的响应体为 404 页面
+            return ERROR_MAP['404']
+
 
     # 路由
     def dispatch_request(self, request):
