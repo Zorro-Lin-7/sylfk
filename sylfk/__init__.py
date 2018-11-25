@@ -26,7 +26,7 @@ TYPE_MAP = {
 
 # 指定URL下，处理请求的函数，将其封装为一个有type标识的数据结构
 class ExecFunc:
-    def __init__(self, func,func_type, **options):
+    def __init__(self, func, func_type, **options):
         self.func = func           # 处理请求的函数
         self.options = options     # 附带参数
         self.func_type = func_type # 函数类型
@@ -109,6 +109,9 @@ class SYLFk:
 
         if port is not None:
             self.port = port
+
+        # 映射static resouce handler，所有静态资源相关的节点函数都命名为static，并且绑定处理方法dispatch_static
+        self.function_map['static'] = ExecFunc(func=self.dispatch_static, func_type='static')
 
         # 把框架本身，也就是应用本身和其它几个配置参数传给 werkzeug 的 run_simple
         run_simple(hostname=self.host, port=self.port, application=self, **options)
