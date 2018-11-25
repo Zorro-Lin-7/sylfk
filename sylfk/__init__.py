@@ -3,6 +3,12 @@ from werkzeug.wrappers import Response
 
 from sylfk.wsgi_adapter import wsgi_app
 
+# 指定URL下，处理请求的函数，将其封装为一个有type标识的数据结构
+class ExecFunc:
+    def __init__(self, func,func_type, **options):
+        self.func = func           # 处理请求的函数
+        self.options = options     # 附带参数
+        self.func_type = func_type # 函数类型
 
 class SYLFk:
 
