@@ -1,4 +1,7 @@
 from werkzeug.serving import run_simple
+from werkzeug.wrappers import Response
+
+from sylfk.wsgi_adapter import wsgi_app
 
 
 class SYLFk:
@@ -9,8 +12,16 @@ class SYLFk:
         self.port = 8086 # 默认端口
 
     # 路由
-    def dispatch_request(self):
-        pass
+    def dispatch_request(self, request):
+        status = 200 # HTTP 状态码，200表示请求成功
+
+        # 定义响应报头的 Server属性
+        headers = {
+                'Server': 'Shiyanlou Framework'
+                }
+
+        # 回传实现 WSGI 规范的响应体给 WSGI 模块
+        return Response('<h1>Hello, Framework</h1>', content_type='text/html', headers=headers, status=status)
 
     # 启动入口，这是使用框架实现应用后，应用启动的入口
     def run(self, host=None, port=None, **options):
@@ -30,7 +41,8 @@ class SYLFk:
         run_simple(hostname=self.host, port=self.port, application=self, **options)
 
     # WSGI调用框架入口的方法
-    def __call__(self):
-        pass
+    def __call__(self, environ, start_response):
+        return wsgi_app(self, environ, start_response)
+
 
 
