@@ -65,15 +65,81 @@ class SYLFk:
 
     # 路由
     def dispatch_request(self, request):
-        status = 200 # HTTP 状态码，200表示请求成功
+        # 去掉 URl 中域名部分，即从 http://xxx.com/path/file?xx=xx 中提取 path/file 部分
+        url = "/" + "/".join(request.url.split("/")[3:]).split("?")[0]
 
-        # 定义响应报头的 Server属性
+        # 通过URL 寻找节点名
+        if url.find(self.static_folder) == 1 and url.index(self.static_folder) == 1:
+            # 如果 URL 以静态资源文件夹名为首目录，则资源为静态资源
+            endpoint = 'static'
+            url = url[1:]
+        else:
+            # 若不以static 为首，则从 URL 与节点的映射表中获取节点
+            endpoint = self.url_map.get(url, None)
+
+        # 定义响应报头的, Server 参数的值表示运行的服务名，通常有 IIS, Apache, Tomact, Nginx等，这里自定义为SYL Web 0.1
         headers = {
-                'Server': 'Shiyanlou Framework'
+                'Server': 'SYL Web 0.1'
                 }
 
-        # 回传实现 WSGI 规范的响应体给 WSGI 模块
-        return Response('<h1>Hello, Framework</h1>', content_type='text/html', headers=headers, status=status)
+        # 如果节点为空 返回404
+        if endpoint is None:
+            return ERROR_MAP['404']
+
+        # 获取节点对应的执行函数
+        exec_function = self.function_map[endpoint]
+
+        # 判断执行函数类型
+        if exec_function.func_type == 'route':
+            """路由处理"""
+
+            # 判断请求方法是否支持
+            if request.method in exec_function.options.get('methods'):
+                """路由处理结果"""
+
+                # 判断路由的执行函数是否需要请求体进行内部处理
+                argcount = exec_function.func.__code__.co_argcount
+
+                if argcount > 0:
+                    # 需要附带请求体进行结果处理
+                    rep = exec_function.func(request)
+                else:
+                    # 不需要附带请求体进行结果处理
+                    rep = exec_function.func()
+
+            else:
+                """未知请求方法"""
+
+                # 返回401 错钱响应体
+                return ERROR_MAP['401']
+
+        elif exec_function.func_type == 'view':
+            """ 视图处理结果 """
+
+            # 所有视图处理函数都需要附带请求体来获取处理结果
+            rep = exec_function.func(request)
+
+        elif exec_function.func_type == 'stqtic':
+            """ 静态逻辑处理 """
+
+            # 静态资源返回的是一个预先封装好的响应体，所以直接返回
+            return exec_function.func(url)
+        else:
+            """ 未知类型处理  """
+
+            # 返回 503错误响应体
+            return ERROR_MAP['503']
+
+        # 定义 200 状态码表示成功
+        status = 200
+
+        # 定义响应体类型
+        content_type = 'text/html'
+
+        # 返回响应体
+        return Response(rep, content_type=f'{content_type}; charset=UTF-8', headers=headers, status=status)
+#        # 回传实现 WSGI 规范的响应体给 WSGI 模块
+#        return Response('<h1>Hello, Framework</h1>', content_type='text/html', headers=headers, status=status)
 
     # 添加路由规则
     def add_url_rule(self, url, func, func_type, endpoint=None, **options):
