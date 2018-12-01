@@ -41,6 +41,7 @@ class SYLFk:
         self.static_map = {} # 存放 URL 与 静态资源的映射
         self.function_map = {} # 存放 Endpoint 与请求处理函数的映射
         self.static_folder = static_folder # 静态资源本地存放路径，默认放在app所在目录的 static 文件夹
+        self.route = Route(self) # 路由装饰器
 
     # 静态资源的路由，用来寻找匹配的URL 并返回对应类型和文件内容封装成的响应体，找不到就返回404页
     def dispatch_static(self, static_path):
