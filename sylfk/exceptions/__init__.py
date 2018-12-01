@@ -15,6 +15,6 @@ class EndpointExistsError(SYLFkException):
 
 
 # “URL 已存在”异常
-class URLExistsError（SYLEkException):
+class URLExistsError(SYLFkException):
     def __init__(self, message='URL exists'):
         super(URLExistsError, self).__init__(message)

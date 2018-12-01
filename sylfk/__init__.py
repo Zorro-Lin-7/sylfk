@@ -2,9 +2,9 @@ from werkzeug.serving import run_simple
 from werkzeug.wrappers import Response
 
 from sylfk.wsgi_adapter import wsgi_app
-from sylfk.exceptions as exceptions
+import sylfk.exceptions as exceptions
 from sylfk.helper import parse_static_key
-
+from sylfk.route import Route
 import os
 
 
@@ -12,7 +12,7 @@ import os
 ERROR_MAP = {
         '401': Response('<h1>401 Unknown or unsupported method</h1>', content_type='text/html; charset=UTF-8', status=401),
         '404': Response('<h1>404 Source Not Found</h1>', content_type='text/html; charset=UTF-8', status=404),
-        '503': Response('<h1>504 Unknown Function Type</h1>', content_type='text/html; charset=UTF-8', status=503),
+        '503': Response('<h1>503 Unknown Function Type</h1>', content_type='text/html; charset=UTF-8', status=503),
         }
 
 # 定义文件类型
@@ -120,7 +120,7 @@ class SYLFk:
             # 所有视图处理函数都需要附带请求体来获取处理结果
             rep = exec_function.func(request)
 
-        elif exec_function.func_type == 'stqtic':
+        elif exec_function.func_type == 'static':
             """ 静态逻辑处理 """
 
             # 静态资源返回的是一个预先封装好的响应体，所以直接返回
@@ -138,7 +138,7 @@ class SYLFk:
         content_type = 'text/html'
 
         # 返回响应体
-        return Response(rep, content_type=f'{content_type}; charset=UTF-8', headers=headers, status=status)
+        return Response(rep, content_type='%s; charset=UTF-8' % content_type, headers=headers, status=status)
 #        # 回传实现 WSGI 规范的响应体给 WSGI 模块
 #        return Response('<h1>Hello, Framework</h1>', content_type='text/html', headers=headers, status=status)
 
@@ -150,7 +150,7 @@ class SYLFk:
             endpoint = func.__name__
 
         # 如果 URL 已存在，抛出异常
-        if url in self.url_map：
+        if url in self.url_map:
             raise exceptions.URLExistsError
 
         # 如果类型不是静态资源，并且节点已存在，则抛出“节点已存在”异常
