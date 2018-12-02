@@ -11,7 +11,7 @@ class Route:
 
         def decorator(f):
             # 调用应用内部的 add_url_rule 添加规则
-            self.app.add_url_rule(url, f, 'route', **options)
+            self.app.add_url_rule(url, f, 'route', **options) # [self.app] 已在上面定义，即应用本身
             return f
 
         return decorator
