@@ -155,7 +155,7 @@ class SYLFk:
 
         # 如果类型不是静态资源，并且节点已存在，则抛出“节点已存在”异常
         if endpoint in self.function_map and func_type != 'static':
-            raise exception.EndpointExistsError
+            raise exceptions.EndpointExistsError
 
         # 添加 URL 与 节点的映射
         self.url_map[url] = endpoint
