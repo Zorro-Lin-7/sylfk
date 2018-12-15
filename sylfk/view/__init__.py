@@ -31,3 +31,15 @@ class View:
 
         # 返回这个处理函数
         return func
+
+# 控制器类
+class Controller:
+    def __init__(self, name, url_map):
+        self.url_map = url_map # 存放映射关系，一个元素为 Dict 的 List
+        self.name = name
+
+    def __name__(self):
+        # 返回控制器名字
+        return self.name
+
+
