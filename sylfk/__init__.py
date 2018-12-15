@@ -146,6 +146,16 @@ class SYLFk:
     def bind_view(self, url, view_class, endpoint): # view_class是类，作为参数传入
         self.add_url_rule(url, func=view_class.get_func(endpoint), func_type='view') # func参数需要一个get_view方法，它是类方法，不是实例方法；且会把节点名作为参数传进去作为函数名——调用add_url_rule时是没有为endpoint参数赋值的，默认为None，此时节点名即函数名。那么，get_view 返回的应该是一个动态生成的函数
 
+    # 控制器加载
+    def load_controller(self, controller):
+
+        # 获取控制器名字
+        name = controller.__name__()
+
+        # 遍历控制器的 `url_map`成员
+        for rule in controller.url_map:
+            # 绑定 URL 与试图对象，最后的节点名称格式为 `控制器名` + “.” + 定义的节点名
+            self.bind_view(rule['url'], rule['view'], name + '.' + rule['endpoint'])
     # 添加路由规则
     def add_url_rule(self, url, func, func_type, endpoint=None, **options):
 
